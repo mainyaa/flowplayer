@@ -26,6 +26,7 @@ package {
     import flash.net.NetConnection;
     import flash.net.NetStream;
     import flash.utils.Timer;
+    import org.mangui.hls.HLS;
 import flash.utils.setTimeout;
 
 public class NetStreamProvider implements StreamProvider {
@@ -46,6 +47,7 @@ public class NetStreamProvider implements StreamProvider {
         // player/video object
         private var player : Flowplayer;
         private var _video : Video;
+        private var _hls : HLS;
 
         public function NetStreamProvider(player : Flowplayer, video : Video) {
             this.player = player;
@@ -60,6 +62,9 @@ public class NetStreamProvider implements StreamProvider {
 
         public function get video() : Video {
           return this._video;
+        }
+        public function get hls() : HLS {
+          return this._hls;
         }
 
         // switch url

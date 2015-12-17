@@ -22,6 +22,7 @@
 package {
 
     import flash.media.Video;
+    import org.mangui.hls.HLS;
 public interface StreamProvider {
     function load(config:Object):void;
     
@@ -42,5 +43,6 @@ public interface StreamProvider {
     function setProviderParam(key:String, value:Object):void;
 
     function get video() : Video;
+    function get hls() : HLS;
   }
 }

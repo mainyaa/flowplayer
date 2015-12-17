@@ -74,8 +74,6 @@ package {
         private var video : Video;
         private var logo : DisplayObject;
         private var provider : StreamProvider;
-        /** reference to the framework. **/
-        protected var _hls : HLS;
         /** Sheet to place on top of the video. **/
         protected var _sheet : Sprite;
         /** Reference to the stage video element. **/
@@ -472,7 +470,7 @@ package {
         };
 
         protected function _manifestLoadedHandler(event : HLSEvent) : void {
-            _duration = event.levels[_hls.startLevel].duration;
+            _duration = event.levels[provider.hls.startLevel].duration;
 
             if (_autoLoad) {
                 _play(-1);
@@ -484,7 +482,7 @@ package {
         protected function _mediaTimeHandler(event : HLSEvent) : void {
             _duration = event.mediatime.duration;
             _mediaPosition = event.mediatime.position;
-            _trigger("position", event.mediatime);
+            //_trigger("position", event.mediatime);
 
             var videoWidth : int = _video ? _video.videoWidth : _stageVideo.videoWidth;
             var videoHeight : int = _video ? _video.videoHeight : _stageVideo.videoHeight;
@@ -538,23 +536,23 @@ package {
 
         /** Javascript getters. **/
         protected function _getCurrentLevel() : int {
-            return _hls.currentLevel;
+            return provider.hls.currentLevel;
         };
 
         protected function _getNextLevel() : int {
-            return _hls.nextLevel;
+            return provider.hls.nextLevel;
         };
 
         protected function _getLoadLevel() : int {
-            return _hls.loadLevel;
+            return provider.hls.loadLevel;
         };
 
         protected function _getLevels() : Vector.<Level> {
-            return _hls.levels;
+            return provider.hls.levels;
         };
 
         protected function _getAutoLevel() : Boolean {
-            return _hls.autoLevel;
+            return provider.hls.autoLevel;
         };
 
         protected function _getDuration() : Number {
@@ -562,27 +560,27 @@ package {
         };
 
         protected function _getPosition() : Number {
-            return _hls.position;
+            return provider.hls.position;
         };
 
         protected function _getPlaybackState() : String {
-            return _hls.playbackState;
+            return provider.hls.playbackState;
         };
 
         protected function _getSeekState() : String {
-            return _hls.seekState;
+            return provider.hls.seekState;
         };
 
         protected function _getType() : String {
-            return _hls.type;
+            return provider.hls.type;
         };
 
         protected function _getbufferLength() : Number {
-            return _hls.stream.bufferLength;
+            return provider.hls.stream.bufferLength;
         };
 
         protected function _getbackBufferLength() : Number {
-            return _hls.stream.backBufferLength;
+            return provider.hls.stream.backBufferLength;
         };
 
         protected function _getmaxBufferLength() : Number {
@@ -630,11 +628,11 @@ package {
         };
 
         protected function _getAutoLevelCapping() : int {
-            return _hls.autoLevelCapping;
+            return provider.hls.autoLevelCapping;
         };
 
         protected function _getJSURLStream() : Boolean {
-            return (_hls.URLstream is JSURLStream);
+            return (provider.hls.URLstream is JSURLStream);
         };
 
         protected function _getPlayerVersion() : Number {
@@ -643,7 +641,7 @@ package {
 
         protected function _getAudioTrackList() : Array {
             var list : Array = [];
-            var vec : Vector.<AudioTrack> = _hls.audioTracks;
+            var vec : Vector.<AudioTrack> = provider.hls.audioTracks;
             for (var i : Object in vec) {
                 list.push(vec[i]);
             }
@@ -651,7 +649,7 @@ package {
         };
 
         protected function _getAudioTrackId() : int {
-            return _hls.audioTrack;
+            return provider.hls.audioTrack;
         };
 
         protected function _getStats() : Object {
@@ -660,43 +658,43 @@ package {
 
         /** Javascript calls. **/
         protected function _load(url : String) : void {
-            _hls.load(url);
+            provider.hls.load(url);
         };
 
         protected function _play(position : Number = -1) : void {
-            _hls.stream.play(null, position);
+            provider.hls.stream.play(null, position);
         };
 
         protected function _pause() : void {
-            _hls.stream.pause();
+            provider.hls.stream.pause();
         };
 
         protected function _resume() : void {
-            _hls.stream.resume();
+            provider.hls.stream.resume();
         };
 
         protected function _seek(position : Number) : void {
-            _hls.stream.seek(position);
+            provider.hls.stream.seek(position);
         };
 
         protected function _stop() : void {
-            _hls.stream.close();
+            provider.hls.stream.close();
         };
 
         protected function _volume(percent : Number) : void {
-            _hls.stream.soundTransform = new SoundTransform(percent / 100);
+            provider.hls.stream.soundTransform = new SoundTransform(percent / 100);
         };
 
         protected function _setCurrentLevel(level : int) : void {
-            _hls.currentLevel = level;
+            provider.hls.currentLevel = level;
         };
 
         protected function _setNextLevel(level : int) : void {
-            _hls.nextLevel = level;
+            provider.hls.nextLevel = level;
         };
 
         protected function _setLoadLevel(level : int) : void {
-            _hls.loadLevel = level;
+            provider.hls.loadLevel = level;
         };
 
         protected function _setmaxBufferLength(newLen : Number) : void {
@@ -744,28 +742,28 @@ package {
         };
 
         protected function _setAutoLevelCapping(value : int) : void {
-            _hls.autoLevelCapping = value;
+            provider.hls.autoLevelCapping = value;
         };
 
         protected function _setJSURLStream(jsURLstream : Boolean) : void {
             if (jsURLstream) {
-                _hls.URLstream = JSURLStream as Class;
-                _hls.URLloader = JSURLLoader as Class;
+                provider.hls.URLstream = JSURLStream as Class;
+                provider.hls.URLloader = JSURLLoader as Class;
                 if (_callbackName) {
-                    _hls.URLstream.externalCallback = _callbackName;
-                    _hls.URLloader.externalCallback = _callbackName;
+                    provider.hls.URLstream.externalCallback = _callbackName;
+                    provider.hls.URLloader.externalCallback = _callbackName;
                 }
             } else {
-                _hls.URLstream = URLStream as Class;
-                _hls.URLloader = URLLoader as Class;
+                provider.hls.URLstream = URLStream as Class;
+                provider.hls.URLloader = URLLoader as Class;
             }
         };
 
         protected function _setAudioTrack(val : int) : void {
-            if (val == _hls.audioTrack) return;
-            _hls.audioTrack = val;
+            if (val == provider.hls.audioTrack) return;
+            provider.hls.audioTrack = val;
             if (!isNaN(_mediaPosition)) {
-                _hls.stream.seek(_mediaPosition);
+                provider.hls.stream.seek(_mediaPosition);
             }
         };
 
@@ -781,41 +779,39 @@ package {
         /** StageVideo detector. **/
         protected function _onStageVideoState(event : StageVideoAvailabilityEvent) : void {
             var available : Boolean = (event.availability == StageVideoAvailability.AVAILABLE);
-            _hls = new HLS();
-            _hls.stage = stage;
             // set framerate to 60 fps
             stage.frameRate = 60;
             // set up stats handler
-            _statsHandler = new StatsHandler(_hls);
-            _hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
-            _hls.addEventListener(HLSEvent.ERROR, _errorHandler);
-            _hls.addEventListener(HLSEvent.FRAGMENT_LOADED, _fragmentLoadedHandler);
-            _hls.addEventListener(HLSEvent.AUDIO_LEVEL_LOADED, _audioLevelLoadedHandler);
-            _hls.addEventListener(HLSEvent.LEVEL_LOADED, _levelLoadedHandler);
-            _hls.addEventListener(HLSEvent.FRAGMENT_PLAYING, _fragmentPlayingHandler);
-            _hls.addEventListener(HLSEvent.MANIFEST_LOADED, _manifestLoadedHandler);
-            _hls.addEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
-            _hls.addEventListener(HLSEvent.PLAYBACK_STATE, _playbackStateHandler);
-            _hls.addEventListener(HLSEvent.SEEK_STATE, _seekStateHandler);
-            _hls.addEventListener(HLSEvent.LEVEL_SWITCH, _levelSwitchHandler);
-            _hls.addEventListener(HLSEvent.AUDIO_TRACKS_LIST_CHANGE, _audioTracksListChange);
-            _hls.addEventListener(HLSEvent.AUDIO_TRACK_SWITCH, _audioTrackChange);
-            _hls.addEventListener(HLSEvent.ID3_UPDATED, _id3Updated);
-            _hls.addEventListener(HLSEvent.FPS_DROP, _fpsDropHandler);
-            _hls.addEventListener(HLSEvent.FPS_DROP_LEVEL_CAPPING, _fpsDropLevelCappingHandler);
-            _hls.addEventListener(HLSEvent.FPS_DROP_SMOOTH_LEVEL_SWITCH, _fpsDropSmoothLevelSwitchHandler);
+            _statsHandler = new StatsHandler(provider.hls);
+            provider.hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
+            provider.hls.addEventListener(HLSEvent.ERROR, _errorHandler);
+            provider.hls.addEventListener(HLSEvent.FRAGMENT_LOADED, _fragmentLoadedHandler);
+            provider.hls.addEventListener(HLSEvent.AUDIO_LEVEL_LOADED, _audioLevelLoadedHandler);
+            provider.hls.addEventListener(HLSEvent.LEVEL_LOADED, _levelLoadedHandler);
+            provider.hls.addEventListener(HLSEvent.FRAGMENT_PLAYING, _fragmentPlayingHandler);
+            provider.hls.addEventListener(HLSEvent.MANIFEST_LOADED, _manifestLoadedHandler);
+            provider.hls.addEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
+            provider.hls.addEventListener(HLSEvent.PLAYBACK_STATE, _playbackStateHandler);
+            provider.hls.addEventListener(HLSEvent.SEEK_STATE, _seekStateHandler);
+            provider.hls.addEventListener(HLSEvent.LEVEL_SWITCH, _levelSwitchHandler);
+            provider.hls.addEventListener(HLSEvent.AUDIO_TRACKS_LIST_CHANGE, _audioTracksListChange);
+            provider.hls.addEventListener(HLSEvent.AUDIO_TRACK_SWITCH, _audioTrackChange);
+            provider.hls.addEventListener(HLSEvent.ID3_UPDATED, _id3Updated);
+            provider.hls.addEventListener(HLSEvent.FPS_DROP, _fpsDropHandler);
+            provider.hls.addEventListener(HLSEvent.FPS_DROP_LEVEL_CAPPING, _fpsDropLevelCappingHandler);
+            provider.hls.addEventListener(HLSEvent.FPS_DROP_SMOOTH_LEVEL_SWITCH, _fpsDropSmoothLevelSwitchHandler);
 
             if (available && stage.stageVideos.length > 0) {
                 _stageVideo = stage.stageVideos[0];
                 _stageVideo.addEventListener(StageVideoEvent.RENDER_STATE, _onStageVideoStateChange)
                 _stageVideo.viewPort = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
-                _stageVideo.attachNetStream(_hls.stream);
+                _stageVideo.attachNetStream(provider.hls.stream);
             } else {
                 _video = new Video(stage.stageWidth, stage.stageHeight);
                 _video.addEventListener(VideoEvent.RENDER_STATE, _onVideoStateChange);
                 addChild(_video);
                 _video.smoothing = true;
-                _video.attachNetStream(_hls.stream);
+                _video.attachNetStream(provider.hls.stream);
             }
             stage.removeEventListener(StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY, _onStageVideoState);
 

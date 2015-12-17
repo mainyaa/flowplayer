@@ -34,10 +34,10 @@ package {
     import flash.media.Video;
 
     public class HLSStreamProvider implements StreamProvider {
+        private var _hls : HLS;
         // player/video object
         private var player : Flowplayer;
         private var _video : Video;
-        private var hls : HLS;
         private var config : Object;
         private var clip : Object;
         private var pos : Number;
@@ -52,54 +52,57 @@ package {
         }
 
         private function initHLS() : void {
-            hls = new HLS();
-            hls.stage = player.stage;
+            _hls = new HLS();
+            _hls.stage = player.stage;
             /* force keyframe seek mode to avoid video glitches when seeking to a non-keyframe position */
             HLSSettings.seekMode = HLSSeekMode.KEYFRAME_SEEK;
-            hls.addEventListener(HLSEvent.MANIFEST_LOADED, _manifestHandler);
-            hls.addEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
-            hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
-            hls.addEventListener(HLSEvent.ERROR, _errorHandler);
-            _video.attachNetStream(hls.stream);
+            _hls.addEventListener(HLSEvent.MANIFEST_LOADED, _manifestHandler);
+            _hls.addEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
+            _hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
+            _hls.addEventListener(HLSEvent.ERROR, _errorHandler);
+            _video.attachNetStream(_hls.stream);
         }
 
         public function get video() : Video {
           return this._video;
         }
+        public function get hls() : HLS {
+          return this._hls;
+        }
 
         public function load(config : Object) : void {
             this.config = config;
             player.debug("loading URL " + config.url);
-            hls.load(config.url);
+            _hls.load(config.url);
             clip = new Object();
         }
 
         public function unload() : void {
-            hls.removeEventListener(HLSEvent.MANIFEST_LOADED, _manifestHandler);
-            hls.removeEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
-            hls.removeEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
-            hls.removeEventListener(HLSEvent.ERROR, _errorHandler);
-            hls.dispose();
-            hls = null;
+            _hls.removeEventListener(HLSEvent.MANIFEST_LOADED, _manifestHandler);
+            _hls.removeEventListener(HLSEvent.MEDIA_TIME, _mediaTimeHandler);
+            _hls.removeEventListener(HLSEvent.PLAYBACK_COMPLETE, _completeHandler);
+            _hls.removeEventListener(HLSEvent.ERROR, _errorHandler);
+            _hls.dispose();
+            _hls = null;
             //player.fire(Flowplayer.UNLOAD, null);
         }
 
         public function play(url : String) : void {
-            hls.load(url);
+            _hls.load(url);
             resume();
         }
 
         public function pause() : void {
-            hls.stream.pause();
+            _hls.stream.pause();
             player.fire(Flowplayer.PAUSE, null);
         }
 
         public function resume() : void {
-            player.debug('HLSStreamProvider::resume(), hls.playbackState=%s, this.pos=%s, this.offsetPos=%s, this.backBuffer=%s', [hls.playbackState, this.pos, this.offsetPos, this.backBuffer]);
-            switch(hls.playbackState) {
+            player.debug('HLSStreamProvider::resume(), _hls.playbackState=%s, this.pos=%s, this.offsetPos=%s, this.backBuffer=%s', [_hls.playbackState, this.pos, this.offsetPos, this.backBuffer]);
+            switch(_hls.playbackState) {
                 case HLSPlayStates.IDLE:
                 // in IDLE state, restart playback
-                    hls.stream.play(null,-1);
+                    _hls.stream.play(null,-1);
                     player.fire(Flowplayer.RESUME, null);
                     break;
                 case HLSPlayStates.PAUSED:
@@ -113,7 +116,7 @@ package {
                       load(this.config);
                       break;
                     } else {
-                      hls.stream.resume();
+                      _hls.stream.resume();
                     }
                     player.fire(Flowplayer.RESUME, null);
                     break;
@@ -126,12 +129,12 @@ package {
         }
 
         public function seek(seconds : Number) : void {
-            hls.stream.seek(seconds);
+            _hls.stream.seek(seconds);
             player.fire(Flowplayer.SEEK, seconds);
         }
 
         public function volume(level : Number, fireEvent : Boolean = true) : void {
-            hls.stream.soundTransform = new SoundTransform(level);
+            _hls.stream.soundTransform = new SoundTransform(level);
             if (fireEvent) {
                 player.fire(Flowplayer.VOLUME, level);
             }
@@ -142,7 +145,7 @@ package {
             if (isNaN(pos) || pos < 0) {
                 pos = 0;
             }
-            return {time:pos, buffer:pos + hls.stream.bufferLength};
+            return {time:pos, buffer:pos + _hls.stream.bufferLength};
         }
 
         public function setProviderParam(key:String, value:Object) : void {
@@ -158,24 +161,24 @@ package {
 
         /* private */
         private function _manifestHandler(event : HLSEvent) : void {
-            clip.bytes = clip.duration = event.levels[hls.startLevel].duration;
+            clip.bytes = clip.duration = event.levels[_hls.startLevel].duration;
             clip.seekable = true;
             clip.src = clip.url = config.url;
-            clip.width = event.levels[hls.startLevel].width;
-            clip.height = event.levels[hls.startLevel].height;
+            clip.width = event.levels[_hls.startLevel].width;
+            clip.height = event.levels[_hls.startLevel].height;
             _checkVideoDimension();
             player.debug("manifest received " + clip);
             if (suppressReady) {
               suppressReady = false;
             } else {
-              hls.addEventListener(HLSEvent.PLAYBACK_STATE, _readyStateHandler);
+              _hls.addEventListener(HLSEvent.PLAYBACK_STATE, _readyStateHandler);
             }
 
-            hls.stream.play();
+            _hls.stream.play();
             if (config.autoplay) {
             } else {
                 player.debug("stopping on first frame");
-                hls.stream.pause();
+                _hls.stream.pause();
             }
         };
 
@@ -213,12 +216,12 @@ package {
         };
 
         private function _readyStateHandler(event: HLSEvent) : void {
-          if (hls.playbackState == HLSPlayStates.PLAYING || hls.playbackState == HLSPlayStates.PAUSED) {
+          if (_hls.playbackState == HLSPlayStates.PLAYING || hls.playbackState == HLSPlayStates.PAUSED) {
             player.fire(Flowplayer.READY, clip);
             if (config.autoplay) {
                 player.fire(Flowplayer.RESUME, null);
             }
-            hls.removeEventListener(HLSEvent.PLAYBACK_STATE, _readyStateHandler);
+            _hls.removeEventListener(HLSEvent.PLAYBACK_STATE, _readyStateHandler);
           }
         };
 
